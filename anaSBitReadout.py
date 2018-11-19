@@ -3,62 +3,136 @@
     Script to analyze sbitreadout data
     By: Caterina Aruta (caterina.aruta@cern.ch) and Francesco Ivone (francesco.ivone@cern.ch)
     """
+
+r"""
+``anaSBitReadout.py`` --- Unpack and plot the data collected by sbitReadOut.py
+=========================================================
+Synopsis
+--------
+**anaSBitReadout.py**  :token:`-i` <*INPUT FOLDER*> :token:`-t` <*GEB size*> :token:`-o` <*OUTPUT FILE*>
+Description
+-----------
+The :program:`anaSBitReadout.py` tool is for unpacking data collected with sbitReadOut.py. It will make a TFile containing:
+-TTree "Packed" which are the data as they have been read
+-TTree "unPacked" which is a summary of the unpacked data
+-Folder "VFATs" which are the unpacked data sorted by VFAT number
+-Folder "iETAs" which are the unpacked data sorted by iEta number
+It will also print the following plots in .png format:
+-ChannSummary.png which is a 3x8 canvas containing all the 24 VFATs with their channel hits
+-StripSummary.png which is a 3x8 canvas containing all the 24 VFATs with their strips hits
+-ietaChanSummary.png which is a summary of the channel hits for each of the 8 iEta positions
+-ietaStripSummary.png which is a summary of the strip hits for each of the 8 iEta positions
+-ietaDelaySummary.png which is a summary of the delay for each of the 8 iEta positions
+-ietaSbitSizeSummary.png which is a summary of the sbitsize for each of the 8 iEta positions
+-ChvsiEta.png which is a 2D histogram with channel number and iEta as X-Y axis
+-StripvsiEta.png which is a 2D histogram with strip number and iEta as X-Y axis
+
+Mandatory arguments
+-------------------
+The following list shows the mandatory inputs that must be supplied to execute
+the script.
+.. program:: anaSBitReadout.py
+.. option:: -i, --inputfolder <FILE NAME>
+    Physical path of the directory with .dat files to be passed to
+    :program:`gemPlotter.py`, in the
+    :doc:`Three Column Format </scandate-list-formats>`.
+
+Optional arguments
+------------------
+.. option:: -t, --type <STRING>
+    Size of the GEB. Could be long or short. If this option is not provided the GEB type will be assumed to be long
+.. option:: -o, --outfilename <STRING>
+    Name of the otuput TFile. If this option is not provided the TFile will be named sbitReadOut.root
+.. option:: -m, --mapping <STRING>
+    Mapping file that provides the channel <-> strip conversion. If this option is not provided a default mapping will be loaded based on GEB size
+
+Examples
+--------
+
+.. code-block:: bash
+    anaSBitReadout.py -i <inputfoldername> -t short
+resulting plots will be stored under:
+.. code-block:: bash
+    inputfoldername/sbitReadOut/
+"""
+
 if __name__ == '__main__':
-    import ROOT as r
-    import numpy as np
-    import root_numpy as rp
-    import glob
-    import sys
+    import argparse
     import os
-    import time
-    from optparse import OptionParser
-    from subprocess import call
-    from array import array
-    from gempython.utils.nesteddict import nesteddict as ndict
-    from gempython.gemplotting.mapping.chamberInfo import chamber_iEta2VFATPos
-    from gempython.gemplotting.mapping.chamberInfo import chamber_vfatPos2iEtaiPhi as vfat_to_etaphi
-    from gempython.gemplotting.utils.anautilities import make3x8Canvas, saveSummaryByiEta, getMapping
-    from gempython.gemplotting.utils.anaoptions import parser
     import pkg_resources
 
-    parser.set_defaults(outfilename="sbitReadOut.root")
-    (options, args) = parser.parse_args()
-    path = options.filename
-    size = ((options.GEBtype).lower())
+    mappath = pkg_resources.resource_filename(
+        'gempython.gemplotting', 'mapping/')
+
+    parser = argparse.ArgumentParser(
+        description="Unpack and plot data collected by sbitReadOut.py. The data are stored in the folder: \n inputfolder/sbitReadout/ ")
+    parser.add_argument("-i", "--inputfolder", type=str, dest="path",
+                        help="Specify the folder containing the .dat files collected by sbitReadOut.py", required=True)
+    parser.add_argument("-t", "--type", dest="GEBtype", type=str, default="long",
+                        help="Specify GEB (long/short). If not provided, default value is long", metavar="GEBtype")
+    parser.add_argument("-o", "--outfilename", type=str, default="sbitReadOut.root", dest="outfilename",
+                        help="Specify Output Filename. If not provided default value is sbitReadOut.root", metavar="outfilename")
+    parser.add_argument("-m", "--mapping", type=str, dest="mapping",
+                        help="Specify the txt file containing the channel <-> strip mapping. If not provided a default mapping will be loaded based on GEB size", metavar="mapping")
+
+    args = parser.parse_args()
+    path = args.path
+    size = ((args.GEBtype).lower())
+    mapping = args.mapping
+
+    # Check the validity of the parsed arguments
+    if size not in ('long', 'short'):
+        raise AssertionError("Invalid value of GEBtype")
+    else:
+        pass
 
     if not os.path.isdir(path):
         raise OSError(2, "No such file or directory", path)
     else:
         pass
 
-    if size not in ('long', 'short'):
-        raise AssertionError("Invalid value of GEBtype")
+    if mapping is None:
+        mapping = mappath+size+"ChannelMap_VFAT3-HV3b-V1_VFAT3-HV3b-V2.txt"
+    elif not os.path.isfile(mapping):
+        raise OSError(2, "No such file or directory", mapping)
     else:
         pass
 
-    filename = options.filename+"/sbitReadOut"
-    outfilename = options.outfilename
-    print("Analyzing: '%s'" % path)
-    os.system("mkdir "+filename)
+    filename = path+"/sbitReadOut"
+    outfilename = args.outfilename
 
-    """
-    At the moment the output of the sbitReadout.py are .dat files with headers that will automatically fill the ROOT TTree. 
-    However ther is one last ':' in the first line that shouldn't be there; consequently the ReadFile function is not able to understand the header. So before reading these .dat files, one has to be sure to remove the ':'
-    To achieve this the following command is needed (removes the last : in the header of all .dat files in the input path)
-    """
-    os.system("find "+path+" -iname \*.dat -exec sed -i 's/7\/i:/7\/i/g' {} \;")
+    import ROOT as r
+    import numpy as np
+    import root_numpy as rp
+    import glob
+    import sys
+    import time
+    from subprocess import call
+    from array import array
+    from gempython.utils.nesteddict import nesteddict as ndict
+    from gempython.utils.wrappers import runCommand
+    from gempython.utils.gemlogger import colors
+    from gempython.gemplotting.mapping.chamberInfo import chamber_iEta2VFATPos
+    from gempython.gemplotting.mapping.chamberInfo import chamber_vfatPos2iEtaiPhi as vfat_to_etaphi
+    from gempython.gemplotting.utils.anautilities import make3x8Canvas, saveSummaryByiEta, getMapping
+
+    print("Analyzing: '%s'" % path)
+    runCommand(["mkdir", "-p", filename])
+
+    # """
+    # At the moment the output of the sbitReadout.py are .dat files with headers that will automatically fill the ROOT TTree. However ther is one last ':' in the first line that shouldn't be there; consequently the ReadFile function is not able to understand the header. So before reading these .dat files, one has to be sure to remove the ':'
+    # To achieve this the following command is needed (removes the last : in the header of all .dat files in the input path)
+    # """
+    # os.system("find "+path+" -iname \*.dat -exec sed -i 's/7\/i:/7\/i/g' {} \;")
 
     # Set default histo behavior
     r.TH1.SetDefaultSumw2(False)
     r.gROOT.SetBatch(True)
     r.gStyle.SetOptStat(1111111)
 
-    mappath = pkg_resources.resource_filename(
-        'gempython.gemplotting', 'mapping/')
     # Loading the dictionary with the mapping
-    vfat_ch_strips = getMapping(
-        mappath+size+"ChannelMap_VFAT3-HV3b-V1_VFAT3-HV3b-V2.txt", False)
-    print("\nVFAT channels to strips "+size+":\t MAP loaded")
+    vfat_ch_strips = getMapping(mapping, False)
+    print("\nVFAT channels to strips \n"+mapping+"\nMAP loaded")
 
     # Loading and reversing the dictionary with (eta , phi) <-> vfatN
     etaphi_to_vfat = ndict()
@@ -70,7 +144,6 @@ if __name__ == '__main__':
         Now it's time to load all the input files and to merge them into one root TTree
         The TTree file it's going to auto extend each time a new file is found
         A TFile it's going to hold this TTree
-
         """
     # Creating the output File and TTree
     outF = r.TFile(filename+'/'+outfilename, 'recreate')
@@ -78,20 +151,22 @@ if __name__ == '__main__':
 
     # searching for all the files with this format and adding them to the TTree
     start_time = time.time()
-    print ("\nReading .dat files from the folder '%s'" % path)
+    print ("\nReading .dat files from the folder %s" % path)
+    # runCommand(["touch", path+"catfile.txt"])
     for idx, file in enumerate(glob.glob(path+'/sbitReadOut_run*.dat')):
-        inT.ReadFile(file)
-        # inT.Fill()
+        os.system("cat "+file+" | tail -n +2 >> "+path + "catfile.txt")
+        os.system("echo" + "" + " >>" + path + "catfile.txt")
+    inT.ReadFile(path+"catfile.txt", "evtNum/i:sbitClusterData0/i:sbitClusterData1/i:sbitClusterData2/i:sbitClusterData3/i:sbitClusterData4/i:sbitClusterData5/i:sbitClusterData6/i:sbitClusterData7/i")
+    print ("%d input files have been read and added to the TTree" % (idx+1))
 
-    print idx+1, 'input files have been read and added to the TTree'
-    # Add the TTree into the TFile
     inT.Write()
-    print 'TTree written\n'
-
+    print ('TTree written\n')
+    print ("Removing the catfile.txt ...")
+    runCommand(["rm", path+"catfile.txt"])
+    print ("Done\n")
     """
     Going to build the output tree starting from the previous TTree converted into an array.
     First of all, going to initilize the array which will hold the data
-
     """
 
     # copying the branch names in order to work with input TTree as an array
@@ -181,8 +256,8 @@ if __name__ == '__main__':
 
     # loop over all branch names but the first (evnt num)
     for branch in brName[1:]:
-        print "Unpacking now", branch + \
-            ",", str(rawData[branch].shape).translate(None, "(),"), "entries"
+        print ("Unpacking now %s, %s entries" %
+               (branch, str(rawData[branch].shape).translate(None, "(),")))
         # h is a dummy variable to be printed in case of error
         for h, word in enumerate(rawData[branch]):
 
@@ -204,8 +279,8 @@ if __name__ == '__main__':
             strip[1] = vfat_ch_strips[vfatN[0]]['Strip'][vfatCH[1]]
             # In case of wrong mapping adjacent channels may not be adjacent strips, which is physically inconsistent
             if(np.abs(strip[0] - strip[1]) > 1):
-                print 'WARNING: not adjacent strips'
-                time.sleep(3)
+                print("{}{}{}".format(colors.RED,
+                                      "WARNING: not adjacent strips", colors.ENDC))
 
             # filling vfat 1Dhistos
             vfat_h_strip[vfatN[0]].Fill(strip[0])
@@ -244,13 +319,14 @@ if __name__ == '__main__':
                 # if the maximum of phi is reached (so there is no "next VFAT"), there must be some kind of error
                 elif vfatCH[i] >= 128 and phi >= 3:
                     # ERROR
-                    print "ERROR"
-                    print "word", word
-                    print "VFATN:", vfatN[0]
-                    print "VFATCH:", vfatCH[0]
-                    print "Cluster Sz:", sbitSize[0]
-                    print "Eta: ", eta
-                    print "phi: ", phi
+                    print("{}{}{}".format(colors.RED,
+                                          "ERROR: exceeding GEB positions", colors.ENDC))
+                    print ("word %s" % word)
+                    print ("VFATN: %d" % vfatN[0])
+                    print ("VFATCH: %d" % vfatCH[0])
+                    print ("Cluster Sz: %d" % sbitSize[0])
+                    print ("Eta: %d" % eta)
+                    print ("phi: %d" % phi)
                     break
 
                 else:
@@ -369,8 +445,9 @@ if __name__ == '__main__':
     canv.SaveAs(filename+'/ChvsiEta.png')
 
     outF.Close()
-    print "\n---Took", (time.time() - start_time) / \
-        int(idx), "seconds for each .dat file---"
-    print "\nGaranting permission to ", filename, "..."
-    os.system("chmod -R 770 "+filename)
-    print "Data stored in", filename+'/'+outfilename, "\nBye now"
+    print ("\n---Took %f seconds for each .dat file---" %
+           ((time.time() - start_time) / int(idx)))
+    print ("\nGaranting permission to %s..." % filename)
+    runCommand(["chmod", "-R", "770", filename])
+    print ("Data stored in %s" % (filename+'/'+outfilename))
+    print("Bye now")

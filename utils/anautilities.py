@@ -14,35 +14,39 @@ Documentation
 -------------
 """
 
+
 def filePathExists(searchPath, subPath=None, debug=False):
     import os
-    
+
     testPath = searchPath
     if subPath is not None:
-        testPath = "%s/%s"%(searchPath, subPath)
+        testPath = "%s/%s" % (searchPath, subPath)
 
     if not os.path.exists(testPath):
         if debug:
-            print "Unable to find location: %s"%(testPath)
+            print "Unable to find location: %s" % (testPath)
         return False
     else:
         if debug:
-            print "Found %s"%s(testPath)
+            print "Found %s" % s(testPath)
         return True
+
 
 def first_index_gt(data_list, value):
     """
     http://code.activestate.com/recipes/578071-fast-indexing-functions-greater-than-less-than-equ/
-    
+
     return the first index greater than value from a given list like object.
     If value is greater than all elements in the list like object, the length 
     of the list like object is returned instead
     """
     try:
-        index = next(data[0] for data in enumerate(data_list) if data[1] > value)
+        index = next(data[0]
+                     for data in enumerate(data_list) if data[1] > value)
         return index
-    except StopIteration: 
+    except StopIteration:
         return len(data_list)
+
 
 def formatSciNotation(value, digits=2):
     """
@@ -54,6 +58,7 @@ def formatSciNotation(value, digits=2):
     sciNotation = '%.{0}E'.format(digits)
 
     return sciNotation % Decimal(value)
+
 
 def get2DMapOfDetector(vfatChanLUT, obsData, mapName, zLabel):
     """
@@ -72,13 +77,14 @@ def get2DMapOfDetector(vfatChanLUT, obsData, mapName, zLabel):
     import os
 
     if mapName not in mappingNames:
-        print("get2DMapOfDetector(): mapName %s not recognized"%mapName)
+        print("get2DMapOfDetector(): mapName %s not recognized" % mapName)
         print("\tAvailable options are:")
-        print("\t",mappingNames)
+        print("\t", mappingNames)
         raise LookupError
 
     import ROOT as r
-    hRetMap = r.TH2F("ieta_vs_%s_%s"%(mapName,zLabel),"",384,-0.5,383.5,8,0.5,8.5)
+    hRetMap = r.TH2F("ieta_vs_%s_%s" % (mapName, zLabel),
+                     "", 384, -0.5, 383.5, 8, 0.5, 8.5)
     hRetMap.SetXTitle(mapName)
     hRetMap.SetYTitle("i#eta")
     hRetMap.SetZTitle(zLabel)
@@ -95,17 +101,20 @@ def get2DMapOfDetector(vfatChanLUT, obsData, mapName, zLabel):
         stripPinOrChan = vfatChanLUT[vfat][mapName][chan]
 
         # Set Bin Content of Histogram
-        hRetMap.SetBinContent( ((iphi-1)*128+stripPinOrChan)+1, ieta, obsData[idx])
+        hRetMap.SetBinContent(
+            ((iphi-1)*128+stripPinOrChan)+1, ieta, obsData[idx])
         pass
 
     return hRetMap
 
+
 def getCyclicColor(idx):
     return 30+4*idx
 
+
 def getDirByAnaType(anaType, cName, ztrim=4):
     from anaInfo import ana_config
-    
+
     import os
 
     # Check anaType is understood
@@ -118,37 +127,38 @@ def getDirByAnaType(anaType, cName, ztrim=4):
     # Check Paths
     from ...utils.wrappers import envCheck
     envCheck('DATA_PATH')
-    dataPath  = os.getenv('DATA_PATH')
+    dataPath = os.getenv('DATA_PATH')
 
     dirPath = ""
     if anaType == "dacScanV3":
-        dirPath = "%s/%s"%(dataPath,anaType)
+        dirPath = "%s/%s" % (dataPath, anaType)
     elif anaType == "latency":
-        dirPath = "%s/%s/%s/trk/"%(dataPath,cName,anaType)
+        dirPath = "%s/%s/%s/trk/" % (dataPath, cName, anaType)
     elif anaType == "sbitMonInt":
-        dirPath = "%s/%s/sbitMonitor/intTrig/"%(dataPath,cName)
+        dirPath = "%s/%s/sbitMonitor/intTrig/" % (dataPath, cName)
     elif anaType == "sbitMonRO":
-        dirPath = "%s/%s/sbitMonitor/readout/"%(dataPath,cName)
+        dirPath = "%s/%s/sbitMonitor/readout/" % (dataPath, cName)
     elif anaType == "sbitRatech":
-        dirPath = "%s/%s/sbitRate/perchannel/"%(dataPath,cName)
+        dirPath = "%s/%s/sbitRate/perchannel/" % (dataPath, cName)
     elif anaType == "sbitRateor":
-        dirPath = "%s/%s/sbitRate/channelOR/"%(dataPath,cName)
+        dirPath = "%s/%s/sbitRate/channelOR/" % (dataPath, cName)
     elif anaType == "scurve":
-        dirPath = "%s/%s/%s/"%(dataPath,cName,anaType)
+        dirPath = "%s/%s/%s/" % (dataPath, cName, anaType)
     elif anaType == "temperature":
-        dirPath = "%s/%s"%(dataPath,anaType)
+        dirPath = "%s/%s" % (dataPath, anaType)
     elif anaType == "thresholdch":
-        dirPath = "%s/%s/threshold/channel/"%(dataPath,cName)
+        dirPath = "%s/%s/threshold/channel/" % (dataPath, cName)
     elif anaType == "thresholdvftrig":
-        dirPath = "%s/%s/threshold/vfat/trig/"%(dataPath,cName)
+        dirPath = "%s/%s/threshold/vfat/trig/" % (dataPath, cName)
     elif anaType == "thresholdvftrk":
-        dirPath = "%s/%s/threshold/vfat/trk/"%(dataPath,cName)
+        dirPath = "%s/%s/threshold/vfat/trk/" % (dataPath, cName)
     elif anaType == "trim":
-        dirPath = "%s/%s/%s/z%f/"%(dataPath,cName,anaType,ztrim)
+        dirPath = "%s/%s/%s/z%f/" % (dataPath, cName, anaType, ztrim)
     elif anaType == "trimV3":
-        dirPath = "%s/%s/trim/"%(dataPath,cName)
+        dirPath = "%s/%s/trim/" % (dataPath, cName)
 
     return dirPath
+
 
 def getEmptyPerVFATList(n_vfat=24):
     """
@@ -158,13 +168,14 @@ def getEmptyPerVFATList(n_vfat=24):
     There are n_vfat inner lists
     """
 
-    return [ [] for vfat in range(0,n_vfat) ]
+    return [[] for vfat in range(0, n_vfat)]
 
-def getMapping(mappingFileName):
+
+def getMapping(mappingFileName, isVFAT2=True):
     """
     Returns a nested dictionary, the outer dictionary uses VFAT position as the has a key,
     the inner most dict has keys from the list anaInfo.py mappingNames.
-    
+
     The inner dict stores a list whose index is ordered by ASIC channel number, accessing
     the i^th element of this list gives either the readout strip number, the readout connector
     pin number, or the vfat channel number as shown in this example:
@@ -199,7 +210,7 @@ def getMapping(mappingFileName):
         mapFile = open(mappingFileName, 'r')
     except IOError as e:
         print "Exception:", e
-        print "Failed to open: '%s'"%mappingFileName
+        print "Failed to open: '%s'" % mappingFileName
     else:
         listMapData = mapFile.readlines()
     finally:
@@ -210,90 +221,113 @@ def getMapping(mappingFileName):
 
     # setup the look up table
     ret_mapDict = nesteddict()
-    for vfat in range(0,24):
+    for vfat in range(0, 24):
         for name in mappingNames:
             ret_mapDict[vfat][name] = [0] * 128
 
     # Set the data in the loop up table
     for idx, line in enumerate(listMapData):
-        if idx == 0: 
-            continue # skip the header line
+        if idx == 0:
+            continue  # skip the header line
         mapping = line.rsplit('\t')
-        ret_mapDict[int(mapping[0])]['Strip'][int(mapping[2]) - 1] = int(mapping[1])
-        ret_mapDict[int(mapping[0])]['PanPin'][int(mapping[2]) -1] = int(mapping[3])
-        ret_mapDict[int(mapping[0])]['vfatCH'][int(mapping[2]) - 1] = int(mapping[2]) - 1
+        if isVFAT2:
+            ret_mapDict[int(mapping[0])]['Strip'][int(
+                mapping[2]) - 1] = int(mapping[1])
+            ret_mapDict[int(mapping[0])]['PanPin'][int(
+                mapping[2]) - 1] = int(mapping[3])
+            ret_mapDict[int(mapping[0])]['vfatCH'][int(
+                mapping[2]) - 1] = int(mapping[2]) - 1
+        else:
+            ret_mapDict[int(mapping[0])]['Strip'][int(
+                mapping[2])] = int(mapping[1])
+            ret_mapDict[int(mapping[0])]['PanPin'][int(
+                mapping[2])] = int(mapping[3])
+            ret_mapDict[int(mapping[0])]['vfatCH'][int(
+                mapping[2])] = int(mapping[2])
 
     return ret_mapDict
+
 
 def getStringNoSpecials(inputStr):
     """
     returns a string without special characters
     """
 
-    inputStr = inputStr.replace('*','')
-    inputStr = inputStr.replace('-','')
-    inputStr = inputStr.replace('+','')
-    inputStr = inputStr.replace('(','')
-    inputStr = inputStr.replace(')','')
-    inputStr = inputStr.replace('/','')
-    inputStr = inputStr.replace('{','')
-    inputStr = inputStr.replace('}','')
-    inputStr = inputStr.replace('#','')
+    inputStr = inputStr.replace('*', '')
+    inputStr = inputStr.replace('-', '')
+    inputStr = inputStr.replace('+', '')
+    inputStr = inputStr.replace('(', '')
+    inputStr = inputStr.replace(')', '')
+    inputStr = inputStr.replace('/', '')
+    inputStr = inputStr.replace('{', '')
+    inputStr = inputStr.replace('}', '')
+    inputStr = inputStr.replace('#', '')
 
     return inputStr
 
+
 def initVFATArray(array_dtype, nstrips=128):
     import numpy as np
-    
+
     list_dtypeTuple = []
 
-    for idx in range(0,len(array_dtype)):
-        if array_dtype.names[idx] == 'vfatN':   continue
-        if array_dtype.names[idx] == 'vfatCh':  continue
-        if array_dtype.names[idx] == 'panPin':  continue
-        if array_dtype.names[idx] == 'ROBstr':  continue
-        list_dtypeTuple.append((array_dtype.names[idx],array_dtype[idx]))
+    for idx in range(0, len(array_dtype)):
+        if array_dtype.names[idx] == 'vfatN':
+            continue
+        if array_dtype.names[idx] == 'vfatCh':
+            continue
+        if array_dtype.names[idx] == 'panPin':
+            continue
+        if array_dtype.names[idx] == 'ROBstr':
+            continue
+        list_dtypeTuple.append((array_dtype.names[idx], array_dtype[idx]))
         pass
 
     return np.zeros(nstrips, dtype=list_dtypeTuple)
 
-#Use inter-quartile range (IQR) to reject outliers
-#Returns a boolean array with True if points are outliers and False otherwise.
+# Use inter-quartile range (IQR) to reject outliers
+# Returns a boolean array with True if points are outliers and False otherwise.
+
+
 def isOutlierIQR(arrayData):
     import numpy as np
-    
-    dMin    = np.min(arrayData,     axis=0)
-    dMax    = np.max(arrayData,     axis=0)
-    median  = np.median(arrayData,  axis=0)
 
-    q1,q3   = np.percentile(arrayData, [25,75], axis=0)
-    IQR     = q3 - q1
+    dMin = np.min(arrayData,     axis=0)
+    dMax = np.max(arrayData,     axis=0)
+    median = np.median(arrayData,  axis=0)
+
+    q1, q3 = np.percentile(arrayData, [25, 75], axis=0)
+    IQR = q3 - q1
 
     return (arrayData < (q1 - 1.5 * IQR)) | (arrayData > (q3 + 1.5 * IQR))
 
-#Use inter-quartile range (IQR) to reject outliers, but consider only high or low tail
-#Returns a boolean array with True if points are outliers and False otherwise.
+# Use inter-quartile range (IQR) to reject outliers, but consider only high or low tail
+# Returns a boolean array with True if points are outliers and False otherwise.
+
+
 def isOutlierIQROneSided(arrayData, rejectHighTail=True):
     import numpy as np
-    
-    dMin    = np.min(arrayData,     axis=0)
-    dMax    = np.max(arrayData,     axis=0)
-    median  = np.median(arrayData,  axis=0)
 
-    q1,q3   = np.percentile(arrayData, [25,75], axis=0)
-    IQR     = q3 - q1
+    dMin = np.min(arrayData,     axis=0)
+    dMax = np.max(arrayData,     axis=0)
+    median = np.median(arrayData,  axis=0)
+
+    q1, q3 = np.percentile(arrayData, [25, 75], axis=0)
+    IQR = q3 - q1
 
     if rejectHighTail:
         return arrayData > (q3 + 1.5 * IQR)
     else:
         return arrayData < (q1 - 1.5 * IQR)
 
-#Use Median absolute deviation (MAD) to reject outliers
-#See: https://github.com/joferkington/oost_paper_code/blob/master/utilities.py
-#Returns a boolean array with True if points are outliers and False otherwise.
+# Use Median absolute deviation (MAD) to reject outliers
+# See: https://github.com/joferkington/oost_paper_code/blob/master/utilities.py
+# Returns a boolean array with True if points are outliers and False otherwise.
+
+
 def isOutlierMAD(arrayData, thresh=3.5):
     import numpy as np
-    
+
     median = np.median(arrayData, axis=0)
     diff = np.abs(arrayData - median)
     med_abs_deviation = np.median(diff)
@@ -304,11 +338,13 @@ def isOutlierMAD(arrayData, thresh=3.5):
         modified_z_score = 0.6745 * diff / med_abs_deviation
         return modified_z_score > thresh
 
-#Use MAD to reject outliers, but consider only high or low tail
-#Returns a boolean array with True if points are outliers and False otherwise.
+# Use MAD to reject outliers, but consider only high or low tail
+# Returns a boolean array with True if points are outliers and False otherwise.
+
+
 def isOutlierMADOneSided(arrayData, thresh=3.5, rejectHighTail=True):
     import numpy as np
-    
+
     median = np.median(arrayData, axis=0)
     diff = arrayData - median
     med_abs_deviation = np.median(np.abs(diff))
@@ -323,7 +359,8 @@ def isOutlierMADOneSided(arrayData, thresh=3.5, rejectHighTail=True):
         else:
             return modified_z_score < -1.0 * thresh
 
-def make2x4Canvas(name, initialContent = None, initialDrawOpt = '', secondaryContent = None, secondaryDrawOpt = '', canv=None):
+
+def make2x4Canvas(name, initialContent=None, initialDrawOpt='', secondaryContent=None, secondaryDrawOpt='', canv=None):
     """
     Creates a 2x4 canvas for summary plots.
 
@@ -336,23 +373,24 @@ def make2x4Canvas(name, initialContent = None, initialDrawOpt = '', secondaryCon
     """
 
     import ROOT as r
-    
+
     if canv is None:
-        canv = r.TCanvas(name,name,500*8,500*3)
-        canv.Divide(4,2)
+        canv = r.TCanvas(name, name, 500*8, 500*3)
+        canv.Divide(4, 2)
 
     if initialContent is not None:
-        for ieta in range(1,9):
+        for ieta in range(1, 9):
             canv.cd(ieta)
             initialContent[ieta].Draw(initialDrawOpt)
     if secondaryContent is not None:
-        for ieta in range(1,9):
+        for ieta in range(1, 9):
             canv.cd(ieta)
-            secondaryContent[ieta].Draw("same%s"%secondaryDrawOpt)
+            secondaryContent[ieta].Draw("same%s" % secondaryDrawOpt)
     canv.Update()
     return canv
 
-def make3x8Canvas(name, initialContent = None, initialDrawOpt = '', secondaryContent = None, secondaryDrawOpt = '', canv=None):
+
+def make3x8Canvas(name, initialContent=None, initialDrawOpt='', secondaryContent=None, secondaryDrawOpt='', canv=None):
     """
     Creates a 3x8 canvas for summary plots.
 
@@ -366,10 +404,10 @@ def make3x8Canvas(name, initialContent = None, initialDrawOpt = '', secondaryCon
 
     import ROOT as r
     from ..mapping.chamberInfo import chamber_vfatPos2PadIdx
-    
+
     if canv is None:
-        canv = r.TCanvas(name,name,500*8,500*3)
-        canv.Divide(8,3)
+        canv = r.TCanvas(name, name, 500*8, 500*3)
+        canv.Divide(8, 3)
 
     if initialContent is not None:
         for vfat in range(24):
@@ -378,9 +416,10 @@ def make3x8Canvas(name, initialContent = None, initialDrawOpt = '', secondaryCon
     if secondaryContent is not None:
         for vfat in range(24):
             canv.cd(chamber_vfatPos2PadIdx[vfat])
-            secondaryContent[vfat].Draw("same%s"%secondaryDrawOpt)
+            secondaryContent[vfat].Draw("same%s" % secondaryDrawOpt)
     canv.Update()
     return canv
+
 
 def makeListOfScanDatesFile(chamberName, anaType, startDate=None, endDate=None, delim='\t', ztrim=4):
     """
@@ -400,15 +439,16 @@ def makeListOfScanDatesFile(chamberName, anaType, startDate=None, endDate=None, 
     envCheck('DATA_PATH')
 
     import datetime
-    startDay = datetime.date(datetime.MINYEAR,1,1)
+    startDay = datetime.date(datetime.MINYEAR, 1, 1)
     if startDate is not None:
-        startDateInfo = [ int(info) for info in startDate.split(".") ]
-        startDay = datetime.date(startDateInfo[0], startDateInfo[1], startDateInfo[2])
+        startDateInfo = [int(info) for info in startDate.split(".")]
+        startDay = datetime.date(
+            startDateInfo[0], startDateInfo[1], startDateInfo[2])
         pass
 
     endDay = datetime.date.today()
     if endDate is not None:
-        endDateInfo = [ int(info) for info in endDate.split(".") ]
+        endDateInfo = [int(info) for info in endDate.split(".")]
         endDay = datetime.date(endDateInfo[0], endDateInfo[1], endDateInfo[2])
         pass
 
@@ -417,37 +457,40 @@ def makeListOfScanDatesFile(chamberName, anaType, startDate=None, endDate=None, 
     listOfScanDates = os.listdir(dirPath)
 
     try:
-        listOfScanDatesFile = open('%s/listOfScanDates.txt'%dirPath,'w+')
+        listOfScanDatesFile = open('%s/listOfScanDates.txt' % dirPath, 'w+')
     except IOError as e:
         print "Exception:", e
         print "Failed to open write output file"
         print "Is the below directory writeable?"
         print ""
-        print "\t%s"%dirPath
+        print "\t%s" % dirPath
         print ""
         exit(os.EX_IOERR)
         pass
-    
-    listOfScanDatesFile.write('ChamberName%sscandate\n'%delim)
+
+    listOfScanDatesFile.write('ChamberName%sscandate\n' % delim)
     for scandate in listOfScanDates:
-	if "current" == scandate:
-	    continue
-        try:
-            scandateInfo = [ int(info) for info in scandate.split('.') ]
-        except ValueError as e:
-            print "Skipping directory %s/%s"%(dirPath,scandate)
+        if "current" == scandate:
             continue
-        thisDay = datetime.date(scandateInfo[0],scandateInfo[1],scandateInfo[2])
+        try:
+            scandateInfo = [int(info) for info in scandate.split('.')]
+        except ValueError as e:
+            print "Skipping directory %s/%s" % (dirPath, scandate)
+            continue
+        thisDay = datetime.date(
+            scandateInfo[0], scandateInfo[1], scandateInfo[2])
 
         if (startDay < thisDay and thisDay <= endDay):
-            listOfScanDatesFile.write('%s%s%s\n'%(chamberName,delim,scandate))
+            listOfScanDatesFile.write('%s%s%s\n' %
+                                      (chamberName, delim, scandate))
             pass
         pass
 
     listOfScanDatesFile.close()
-    runCommand( ['chmod','g+rw','%s/listOfScanDates.txt'%dirPath] )
+    runCommand(['chmod', 'g+rw', '%s/listOfScanDates.txt' % dirPath])
 
     return
+
 
 def parseCalFile(filename=None):
     """
@@ -458,7 +501,7 @@ def parseCalFile(filename=None):
     Returns a tuple of numpy arrays where index 0 (1) of the tuple
     corresponds to the slope (intercept) arrays.  The returned 
     arrays are indexed by VFAT position.
-    
+
     The conversion follows via:
 
     fC = ret_tuple[0][vfat] * CAL_DAC + ret_tuple[1][vfat]
@@ -480,18 +523,19 @@ def parseCalFile(filename=None):
     """
 
     import numpy as np
-    import root_numpy as rp #note need root_numpy-4.7.2 (may need to run 'pip install root_numpy --upgrade')
+    # note need root_numpy-4.7.2 (may need to run 'pip install root_numpy --upgrade')
+    import root_numpy as rp
     import ROOT as r
 
     # Set the CAL DAC to fC conversion
     calDAC2Q_b = np.zeros(24)
     calDAC2Q_m = np.zeros(24)
     if filename is not None:
-        list_bNames = ["vfatN","slope","intercept"]
-        calTree = r.TTree('calTree','Tree holding VFAT Calibration Info')
+        list_bNames = ["vfatN", "slope", "intercept"]
+        calTree = r.TTree('calTree', 'Tree holding VFAT Calibration Info')
         calTree.ReadFile(filename)
         array_CalData = rp.tree2array(tree=calTree, branches=list_bNames)
-    
+
         for dataPt in array_CalData:
             calDAC2Q_b[dataPt['vfatN']] = dataPt['intercept']
             calDAC2Q_m[dataPt['vfatN']] = dataPt['slope']
@@ -502,6 +546,7 @@ def parseCalFile(filename=None):
         pass
 
     return (calDAC2Q_m, calDAC2Q_b)
+
 
 def parseListOfScanDatesFile(filename, alphaLabels=False, delim='\t'):
     """
@@ -529,7 +574,7 @@ def parseListOfScanDatesFile(filename, alphaLabels=False, delim='\t'):
     this character will be skipped.
 
     Arguments are described as:
-    
+
     filename - physical filename of input list of scandate files
     alphaLabels - True (False): the optional third column is understood as alphanumeric (floating point)
 
@@ -542,9 +587,9 @@ def parseListOfScanDatesFile(filename, alphaLabels=False, delim='\t'):
 
     # Check input file
     try:
-        fileScanDates = open(filename, 'r') 
+        fileScanDates = open(filename, 'r')
     except Exception as e:
-        print '%s does not seem to exist or is not readable'%(filename)
+        print '%s does not seem to exist or is not readable' % (filename)
         print e
         exit(os.EX_NOINPUT)
         pass
@@ -552,17 +597,18 @@ def parseListOfScanDatesFile(filename, alphaLabels=False, delim='\t'):
     parsedListOfScanDates = []
     strIndepVar = ""
     indepVar = ""
-    for i,line in enumerate(fileScanDates):
+    for i, line in enumerate(fileScanDates):
         if line[0] == "#":
             continue
 
         # Split the line
         line = line.strip('\n')
-        analysisList = line.rsplit(delim) #chamber name, scandate, independent var
+        # chamber name, scandate, independent var
+        analysisList = line.rsplit(delim)
 
-        # Get the indepVar name if it is present, 
+        # Get the indepVar name if it is present,
         # Always skip the first line
-        if i==0:
+        if i == 0:
             if len(analysisList) == 3:
                 strIndepVar = analysisList[2]
             elif len(analysisList) == 2:
@@ -580,33 +626,39 @@ def parseListOfScanDatesFile(filename, alphaLabels=False, delim='\t'):
                 try:
                     indepVar = float(analysisList[2])
                 except Exception as e:
-                    print("Non-numeric input given, maybe you ment to call with option 'alphaLabels=True'?")
+                    print(
+                        "Non-numeric input given, maybe you ment to call with option 'alphaLabels=True'?")
                     print("Exiting")
                     exit(os.EX_USAGE)
         else:
             print "Input format incorrect"
-            print "I was expecting a delimited file using '%s' with all lines having either 2 or 3 entries"%delim
+            print "I was expecting a delimited file using '%s' with all lines having either 2 or 3 entries" % delim
             print "But I received:"
-            print "\t%s"%(line)
+            print "\t%s" % (line)
             print "Exiting"
             exit(os.EX_USAGE)
             pass
-        
-        parsedListOfScanDates.append( (cName, scandate, indepVar) )
 
-    return (parsedListOfScanDates,strIndepVar)
+        parsedListOfScanDates.append((cName, scandate, indepVar))
 
-#Use Median absolute deviation (MAD) to reject outliers
-#See: http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
-#And also: http://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
-def rejectOutliersMAD(arrayData, thresh=3.5):    
+    return (parsedListOfScanDates, strIndepVar)
+
+# Use Median absolute deviation (MAD) to reject outliers
+# See: http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
+# And also: http://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
+
+
+def rejectOutliersMAD(arrayData, thresh=3.5):
     arrayOutliers = isOutlierMAD(arrayData, thresh)
     return arrayData[arrayOutliers != True]
 
-#Use MAD to reject outliers, but consider only high or low tail
+# Use MAD to reject outliers, but consider only high or low tail
+
+
 def rejectOutliersMADOneSided(arrayData, thresh=3.5, rejectHighTail=True):
     arrayOutliers = isOutlierMADOneSided(arrayData, thresh, rejectHighTail)
     return arrayData[arrayOutliers != True]
+
 
 def saveSummary(dictSummary, dictSummaryPanPin2=None, name='Summary', trimPt=None, drawOpt="colz"):
     """
@@ -625,16 +677,16 @@ def saveSummary(dictSummary, dictSummaryPanPin2=None, name='Summary', trimPt=Non
     import ROOT as r
     from ..mapping.chamberInfo import chamber_vfatPos2PadIdx
 
-    legend = r.TLegend(0.75,0.7,0.88,0.88)
+    legend = r.TLegend(0.75, 0.7, 0.88, 0.88)
     r.gStyle.SetOptStat(0)
     if dictSummaryPanPin2 is None:
         canv = make3x8Canvas('canv', dictSummary, drawOpt)
-        for vfat in range(0,24):
+        for vfat in range(0, 24):
             canv.cd(chamber_vfatPos2PadIdx[vfat])
             if trimPt is not None and trimLine is not None:
                 trimLine = r.TLine(-0.5, trimVcal[vfat], 127.5, trimVcal[vfat])
                 legend.Clear()
-                legend.AddEntry(trimLine, 'trimVCal is %f'%(trimVcal[vfat]))
+                legend.AddEntry(trimLine, 'trimVCal is %f' % (trimVcal[vfat]))
                 legend.Draw('SAME')
                 trimLine.SetLineColor(1)
                 trimLine.SetLineWidth(3)
@@ -644,16 +696,16 @@ def saveSummary(dictSummary, dictSummaryPanPin2=None, name='Summary', trimPt=Non
             pass
         pass
     else:
-        canv = r.TCanvas('canv','canv',500*8,500*3)
-        canv.Divide(8,6)
+        canv = r.TCanvas('canv', 'canv', 500*8, 500*3)
+        canv.Divide(8, 6)
         r.gStyle.SetOptStat(0)
-        for ieta in range(0,8):
-            for iphi in range (0,3):
+        for ieta in range(0, 8):
+            for iphi in range(0, 3):
                 r.gStyle.SetOptStat(0)
-                canv.cd((ieta+1 + iphi*16)%48 + 16)
+                canv.cd((ieta+1 + iphi*16) % 48 + 16)
                 dictSummary[ieta+(8*iphi)].Draw(drawOpt)
                 canv.Update()
-                canv.cd((ieta+9 + iphi*16)%48 + 16)
+                canv.cd((ieta+9 + iphi*16) % 48 + 16)
                 dictSummaryPanPin2[ieta+(8*iphi)].Draw(drawOpt)
                 canv.Update()
                 pass
@@ -663,6 +715,7 @@ def saveSummary(dictSummary, dictSummaryPanPin2=None, name='Summary', trimPt=Non
     canv.SaveAs(name)
 
     return
+
 
 def saveSummaryByiEta(dictSummary, name='Summary', trimPt=None, drawOpt="colz"):
     """
@@ -678,15 +731,16 @@ def saveSummaryByiEta(dictSummary, name='Summary', trimPt=None, drawOpt="colz"):
 
     import ROOT as r
 
-    legend = r.TLegend(0.75,0.7,0.88,0.88)
+    legend = r.TLegend(0.75, 0.7, 0.88, 0.88)
     r.gStyle.SetOptStat(0)
-    canv = make2x4Canvas(name='canv', initialContent=dictSummary, initialDrawOpt=drawOpt)
-    for ieta in range(0,8):
+    canv = make2x4Canvas(
+        name='canv', initialContent=dictSummary, initialDrawOpt=drawOpt)
+    for ieta in range(0, 8):
         canv.cd(ieta+1)
         if trimPt is not None and trimLine is not None:
             trimLine = r.TLine(-0.5, trimVcal[ieta], 127.5, trimVcal[ieta])
             legend.Clear()
-            legend.AddEntry(trimLine, 'trimVCal is %f'%(trimVcal[vfat]))
+            legend.AddEntry(trimLine, 'trimVCal is %f' % (trimVcal[vfat]))
             legend.Draw('SAME')
             trimLine.SetLineColor(1)
             trimLine.SetLineWidth(3)
