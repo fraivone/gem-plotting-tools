@@ -320,7 +320,7 @@ if __name__ == '__main__':
                 elif vfatCH[i] >= 128 and phi >= 3:
                     # ERROR
                     print("{}{}{}".format(colors.RED,
-                                          "ERROR: exceeding GEB positions", colors.ENDC))
+                                          "ERROR: exceeding VFAT position on the GEB", colors.ENDC))
                     print ("word %s" % word)
                     print ("VFATN: %d" % vfatN[0])
                     print ("VFATCH: %d" % vfatCH[0])
